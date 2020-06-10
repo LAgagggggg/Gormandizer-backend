@@ -6,6 +6,8 @@ var fs = require("fs");
 
 const app = new Koa();
 
+const historyLimitNumber = 30;
+
 // read history
 let history;
 function readHistory() {
@@ -14,6 +16,9 @@ function readHistory() {
             console.log(err);
         } else {
             history = JSON.parse(file);
+            if (Array.isArray(history) && history.length > historyLimitNumber) {
+                history = history.slice(-historyLimitNumber)
+            }
         }
     });
 }
@@ -57,5 +62,5 @@ router.get('/history', async (ctx, next) => {
 readHistory();
 app.use(bodyParser());
 app.use(router.routes());
-app.listen(3001);
+app.listen(6667);
 console.log('app started at port 3001...');
