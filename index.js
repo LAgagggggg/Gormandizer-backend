@@ -63,4 +63,4 @@ readHistory();
 app.use(bodyParser());
 app.use(router.routes());
 app.listen(6667);
-console.log('app started at port 3001...');
+console.log('app started at port 6667...');
