@@ -8,12 +8,29 @@ const app = new Koa();
 
 // read history
 let history;
-fs.readFile('./history.txt', { encoding: "utf-8" }, function (err, file) {
-    if (err) {
-        console.log(err);
-    } else {
-        history = JSON.parse(file);
-    }
+function readHistory() {
+    fs.readFile('./history.txt', { encoding: "utf-8" }, function (err, file) {
+        if (err) {
+            console.log(err);
+        } else {
+            history = JSON.parse(file);
+        }
+    });
+}
+
+function writeHistory() {
+    fs.writeFile('./history.txt', JSON.stringify(history), { flag: 'w', encoding: 'utf-8', mode: '0666' }, function (err) {
+        if (err) {
+            console.log(err);
+        }
+    })
+}
+
+app.use(async (ctx, next) => {
+    ctx.set('Access-Control-Allow-Origin', '*');
+    ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    ctx.set('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
+    await next();
 });
 
 router.post('/commit', async (ctx, next) => {
@@ -25,11 +42,7 @@ router.post('/commit', async (ctx, next) => {
     else {
         history = [content];
     }
-    fs.writeFile('./history.txt', JSON.stringify(history), { flag: 'w', encoding: 'utf-8', mode: '0666' }, function (err) {
-        if (err) {
-            console.log("文件写入失败")
-        }
-    })
+    writeHistory();
     ctx.response.body = `200 OK`;
 });
 
@@ -37,6 +50,7 @@ router.get('/history', async (ctx, next) => {
     ctx.response.body = JSON.stringify(history);
 });
 
+readHistory();
 app.use(bodyParser());
 app.use(router.routes());
 app.listen(3001);
