@@ -28,10 +28,14 @@ function writeHistory() {
 
 app.use(async (ctx, next) => {
     ctx.set('Access-Control-Allow-Origin', '*');
-    ctx.set('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    ctx.set('Access-Control-Allow-Headers', 'Content-Type');
     ctx.set('Access-Control-Allow-Methods', 'POST, GET, PUT, DELETE, OPTIONS');
     await next();
 });
+
+router.options('/commit', async (ctx, next) => {
+    ctx.response.body = `200 OK`;
+})
 
 router.post('/commit', async (ctx, next) => {
     var content = ctx.request.body.content
@@ -47,7 +51,7 @@ router.post('/commit', async (ctx, next) => {
 });
 
 router.get('/history', async (ctx, next) => {
-    ctx.response.body = JSON.stringify(history);
+    ctx.response.body = JSON.stringify(history ?? "");
 });
 
 readHistory();
