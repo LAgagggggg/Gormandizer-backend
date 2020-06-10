@@ -62,5 +62,5 @@ router.get('/history', async (ctx, next) => {
 readHistory();
 app.use(bodyParser());
 app.use(router.routes());
-app.listen(6667);
-console.log('app started at port 6667...');
+app.listen(5556);
+console.log('app started at port 5556...');
