@@ -6,7 +6,7 @@ var fs = require("fs");
 
 const app = new Koa();
 
-const historyLimitNumber = 30;
+const historyLimitNumber = 10;
 
 // read history
 let history;
@@ -47,6 +47,9 @@ router.post('/commit', async (ctx, next) => {
     console.log(`committed: ${content}`);
     if (Array.isArray(history)) {
         history.push(content);
+	if (Array.isArray(history) && history.length > historyLimitNumber) {
+                history = history.slice(-historyLimitNumber)
+        }
     }
     else {
         history = [content];
