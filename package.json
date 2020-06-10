@@ -19,6 +19,8 @@
     "dependencies": {
         "koa": "2.0.0",
         "koa-router": "7.0.0",
-        "koa-bodyparser": "3.2.0"
+        "koa-bodyparser": "3.2.0",
+	"qs": "^6.0.4",
+    	"fresh": "^0.5.2"
     }
 }
