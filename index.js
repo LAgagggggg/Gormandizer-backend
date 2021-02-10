@@ -6,7 +6,8 @@ var fs = require("fs");
 
 const app = new Koa();
 
-const historyLimitNumber = 10;
+const historyShownLimitNumber = 10;
+const historyStorageLimitNumber = 100;
 
 // read history
 let history;
@@ -16,8 +17,8 @@ function readHistory() {
             console.log(err);
         } else {
             history = JSON.parse(file);
-            if (Array.isArray(history) && history.length > historyLimitNumber) {
-                history = history.slice(-historyLimitNumber)
+            if (Array.isArray(history) && history.length > historyStorageLimitNumber) {
+                history = history.slice(-historyStorageLimitNumber)
             }
         }
     });
@@ -47,8 +48,8 @@ router.post('/commit', async (ctx, next) => {
     console.log(`committed: ${content}`);
     if (Array.isArray(history)) {
         history.push(content);
-	if (Array.isArray(history) && history.length > historyLimitNumber) {
-                history = history.slice(-historyLimitNumber)
+	if (Array.isArray(history) && history.length > historyStorageLimitNumber) {
+                history = history.slice(-historyStorageLimitNumber)
         }
     }
     else {
@@ -59,7 +60,7 @@ router.post('/commit', async (ctx, next) => {
 });
 
 router.get('/history', async (ctx, next) => {
-    ctx.response.body = JSON.stringify(history ?? "");
+    ctx.response.body = JSON.stringify(history.slice(-historyShownLimitNumber) ?? "");
 });
 
 readHistory();
