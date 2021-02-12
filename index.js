@@ -1,35 +1,29 @@
 const Koa = require('koa');
 const router = require('koa-router')();
 const bodyParser = require('koa-bodyparser');
-var path = require("path");
-var fs = require("fs");
+var mysql      = require('mysql');
+
+var connection = mysql.createConnection({
+  host     : 'localhost',
+  user     : 'root',
+  password : '19970720Cool',
+  database : 'gormandizer'
+});
+
+connection.connect();
 
 const app = new Koa();
 
 const historyShownLimitNumber = 10;
-const historyStorageLimitNumber = 100;
 
 // read history
 let history;
 function readHistory() {
-    fs.readFile('./history.txt', { encoding: "utf-8" }, function (err, file) {
-        if (err) {
-            console.log(err);
-        } else {
-            history = JSON.parse(file);
-            if (Array.isArray(history) && history.length > historyStorageLimitNumber) {
-                history = history.slice(-historyStorageLimitNumber)
-            }
-        }
-    });
-}
-
-function writeHistory() {
-    fs.writeFile('./history.txt', JSON.stringify(history), { flag: 'w', encoding: 'utf-8', mode: '0666' }, function (err) {
-        if (err) {
-            console.log(err);
-        }
-    })
+    connection.query(`SELECT content FROM history ORDER BY create_time DESC LIMIT ${historyShownLimitNumber}`, function (error, results, fields) {
+        history = results.map(function (object) {
+            return object.content
+        })
+      });
 }
 
 app.use(async (ctx, next) => {
@@ -47,20 +41,20 @@ router.post('/commit', async (ctx, next) => {
     var content = ctx.request.body.content
     console.log(`committed: ${content}`);
     if (Array.isArray(history)) {
-        history.push(content);
-	if (Array.isArray(history) && history.length > historyStorageLimitNumber) {
-                history = history.slice(-historyStorageLimitNumber)
+        history.unshift(content);
+	    if (history.length > historyShownLimitNumber) {
+            history = history.slice(0, historyShownLimitNumber)
         }
     }
     else {
         history = [content];
     }
-    writeHistory();
+    connection.query(`INSERT INTO history (content, create_time) VALUES (\'${content}\', NOW())`)
     ctx.response.body = `200 OK`;
 });
 
 router.get('/history', async (ctx, next) => {
-    ctx.response.body = JSON.stringify(history.slice(-historyShownLimitNumber) ?? "");
+    ctx.response.body = JSON.stringify(history ?? "");
 });
 
 readHistory();
